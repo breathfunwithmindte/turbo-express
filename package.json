@@ -1,0 +1,38 @@
+{
+  "name": "turbo-express",
+  "version": "1.0.0",
+  "description": "turbo express performance security easy to use web server framework ",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+
+  },
+  "peerDependencies": {
+    "multiparty": "^4.2.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodemon index.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/breathfunwithmindte/turbo-express.git"
+  },
+  "keywords": [
+    "web",
+    "server",
+    "framwork",
+    "lightweight",
+    "minimalistic",
+    "superfast",
+    "fast"
+  ],
+  "author": "Mike Karypidis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/breathfunwithmindte/turbo-express/issues"
+  },
+  "homepage": "https://github.com/breathfunwithmindte/turbo-express#readme"
+}
