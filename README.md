@@ -1,10 +1,10 @@
 # TurboServer - A Fast and Powerful Node.js Web Framework
 
-    TurboServer is inspired by Express.js and offers a similar API to make it easy for developers familiar with Express to get started. In fact, TurboServer offers many of the same features and middleware that Express does, making it a great choice for developers who want a fast and efficient alternative to Express.
+TurboServer is inspired by Express.js and offers a similar API to make it easy for developers familiar with Express to get started. In fact, TurboServer offers many of the same features and middleware that Express does, making it a great choice for developers who want a fast and efficient alternative to Express.
 
 #
 
-    Additionally, TurboServer is built with an OOP architecture in mind, with Request and Response classes acting as interfaces. This makes it easy for developers to add new methods or override default functionality, leading to increased scalability and flexibility for your web applications.
+Additionally, TurboServer is built with an OOP architecture in mind, with Request and Response classes acting as interfaces. This makes it easy for developers to add new methods or override default functionality, leading to increased scalability and flexibility for your web applications.
 
 #
 
