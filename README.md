@@ -1,0 +1,464 @@
+# TurboServer - A Fast and Powerful Node.js Web Server Framework
+
+TurboServer is inspired by Express.js 
+and offers a similar API to make it easy for developers familiar with Express to get started. 
+In fact, TurboServer offers many of the same features and middleware that Express does, 
+making it a great choice for developers who want a fast and efficient alternative to Express.
+
+> Made with ❤️ by Mike Karypidis
+
+#
+
+Additionally, TurboServer is built with an OOP architecture in mind, 
+with Request and Response classes acting as interfaces. 
+This makes it easy for developers to add new methods or override default functionality, 
+leading to increased scalability and flexibility for your web applications.
+
+#
+
+## Installation
+
+To install TurboServer, simply run the following command:
+
+```
+npm install turboserver
+```
+
+## Getting Started
+
+Here's a simple example of how to create a basic server using TurboServer:
+
+``` javascript
+
+  const TurboServer = require('turboserver');
+
+  const app = new TurboServer(1);
+
+  app.get('/', (req, res) => {
+    res.send('Hello, World!');
+  });
+
+  app.listen(3000, () => {
+    console.log('Server started on port 3000');
+  });
+```
+
+# Clustering
+
+TurboServer is built to support clustering out of the box. By passing a number to the TurboServer constructor, you can specify how many worker processes to spawn for your application.
+
+In the example above, const app = new TurboServer(2) tells TurboServer to start two worker processes for the server. This allows the server to handle multiple requests simultaneously, improving the performance and scalability of your application.
+
+To take full advantage of the clustering feature, it's important to make sure your application is stateless and doesn't rely on local variables or in-memory storage. With proper configuration, clustering can help your application handle a large number of requests with ease.
+
+# Middlewares
+TurboServer includes a number of built-in middlewares that you can use to add functionality to your application. Here are some of out of the box middlewares:
+
+1. Cors middleware
+2. Static middleware
+3. Upload middleware
+4. ValidaionMiddleware
+5. RunMethod middleware
+6. Authentication middleware
+7. BuildForm middleware // comming soon
+
+Example: 
+
+> turbo-express-js/samples/middlewares.test.js
+
+``` javascript
+  const TurboExpress = require("turbo-express-js");
+  const RequestInterface = require("turbo-express-js/types/RequestInterface");
+  const ResponseInterface = require("turbo-express-js/types/ResponseInterface");
+
+  const app = new TurboExpress(1);
+
+  app.use("/*", TurboExpress.Cors({ origins: ["*"] })); // CORS middleware
+  app.get("/public/*", TurboExpress.Static({ folder: "/public" })); // Serve static files
+  app.post("/replace-attachments", TurboExpress.Upload({ memory: true, folder: "/storage" }), attachment_replace); // Handle attachment replacement
+  app.get("/run-method", TurboExpress.RunMethod({
+    exe: [{ isAsync: true, belong: "res", methodname: "test_runmethod", inject: "injected data" }]
+  })); // Execute methods of req or res without passing a controller function
+
+  // app.get("/something", TurboExpress.Validation())                                                       // Look at example for request validation
+  // app.get("/something", TurboExpress.Authentication({ authentication_service: authenticationService })) //  Look at example for authentication
+  // app.get("/user/new", TurboExpress.BuildForm()) // Work in progress
+
+  app.get("/:username", (req, res) => res.send("ok with cors: " + req.params().get("username")));
+
+  app.options("/*", (req, res) => res.send("ok")); // CORS :: in most cases u need to include this line because browser will send options request before the main request.
+
+  app.listen(5000);
+
+  /**
+   * @param {RequestInterface} req 
+   * @param {ResponseInterface} res 
+   */
+  async function attachment_replace(req, res) {
+    // req._files[0].is_saved   // if not error this will be true
+    // req._files[0].save()     // this method is used to save the file, file can be saved without middleware.
+    // req._files[0].unlink()   // delete the file is it is saved, in case for some reason, file that was saved should be rolled back.
+
+    res.status(200).json({
+      body: await req.body(), // attachment properties will be replaced by url using Upload middleware.
+      files: req.files()
+    });
+  }
+```
+
+
+# Basic Execution
+Executing code in master and worker cluster processes.
+> turbo-express-js/samples/exesomething.test.js
+
+``` javascript
+  const TurboExpress = require("turbo-express-js");
+  const app = new TurboExpress(2);
+
+  TurboExpress.exeMaster(async () => console.log("This callback is executed in the master cluster process."););
+  TurboExpress.exeWorker(async () => console.log("This callback is executed on each worker cluster process."););
+
+  app.listen(5000);
+```
+
+## Request Validation and Handling
+Validate and handle HTTP requests with Turbo Express. (Out of the box feature)
+> turbo-express-js/samples/validation.test.js
+
+``` javascript
+  const TurboExpress = require("turbo-express-js");
+  const RequestInterface = require("turbo-express-js/types/RequestInterface");
+  const ResponseInterface = require("turbo-express-js/types/ResponseInterface");
+
+  const app = new TurboExpress(1);
+
+  /**
+   * @param {RequestInterface} req 
+   * @param {ResponseInterface} res 
+   */
+  async function create_user(req, res) {
+    res.status(200).json({
+      body: await req.body(),         // Contains all properties sent to the server
+      valid_data: req.validDataObj(), // Contains only properties included in the validation schema
+      files: req.files()              // Returns a list of files 
+      // Files are also mentioned in the body and valid_data as: <key or property>: <attachment::random id>
+    });
+  }
+
+  app.post("/create_user", TurboExpress.Validation({
+    validations: [
+      new TurboExpress.ValidationTypes.ValidationSchema(
+        "email",
+        [
+          { name: TurboExpress.ValidationTypes.ValidationName.ISREQUIRED },
+          { name: TurboExpress.ValidationTypes.ValidationName.MINLENGTH, value: 5 },
+          { name: TurboExpress.ValidationTypes.ValidationName.MAXLENGTH, value: 28 },
+          { name: TurboExpress.ValidationTypes.ValidationName.CONTAIN, value: "kristina" },
+          { name: TurboExpress.ValidationTypes.ValidationName.NOT_CONTAIN, value: " " },
+          { name: TurboExpress.ValidationTypes.ValidationName.ENDSWIDTH, value: ".com" },
+          { name: TurboExpress.ValidationTypes.ValidationName.VALID_EMAIL },
+        ],
+        true,   // Is required?
+        null,   // Default value
+        "body"  // Namespace: <body, query, params, formdata>
+      ),
+      new TurboExpress.ValidationTypes.ValidationSchema(
+        "avatar",
+        [
+          { name: TurboExpress.ValidationTypes.ValidationName.ATTACHMENT_REQUIRED },
+          { name: TurboExpress.ValidationTypes.ValidationName.ATTACHMENT_EXTENSION, value: "jpeg" },
+        ],
+        true,   // Is required?
+        null,   // Default value
+        "body"  // Namespace: <body, query, params, formdata>
+      )
+    ]
+  }), create_user);
+
+  app.listen(5000);
+```
+This section demonstrates how to validate and handle HTTP requests using Turbo Express. The example includes a create_user function that serves as the request handler. If the request passes the validation, the handler function processes the request and sends a response. However, if the request does not pass the validation, Turbo Express automatically returns a 400 response with the validation errors. Additionally, Turbo Express provides a ValidationError class/interface that you can override for handling custom error messages and supporting multiple languages. For more advanced usage and customization options, refer to the official documentation of Turbo Express at the project's website.
+
+## Authentication and Authorization
+Implement user authentication and authorization using Turbo Express. (Out of the box feature)
+> turbo-express-js/samples/authentication.test.js
+
+``` javascript
+  const TurboExpress = require("turbo-express-js");
+  const RequestInterface = require("turbo-express-js/types/RequestInterface");
+  const ResponseInterface = require("turbo-express-js/types/ResponseInterface");
+
+
+  const app = new TurboExpress(1);
+
+  // class MyAuthenticationService extends TurboExpress.TurboExpressDefault.JWTBcryptMongoDBAuthService; Work Completed but documetation will come soon. Class that already implements all the required methods using MongoDB database, jwt and bcryptjs.
+
+  class MyAuthenticationService extends TurboExpress.ExpressServices.AuthenticationService {
+
+    // Override default values if needed
+    // secret
+    // secret_tmp
+    // user_key_value_properties
+
+    async find_user(login_value) 
+    {
+      // Find the actual user in the database or from an external service using the login_value (e.g., email, phone number, username)
+      if (login_value === "katia") return { user_id: "1", email: "katia@gmail.com", username: "@katia" };
+      return null; // User not found or unauthorized (401)
+    }
+
+    async compare_password(user, password) 
+    {
+      return true; // Compare user.password with the incoming password (Note: Do not use this implementation in production)
+    }
+
+    get_token(req) 
+    {
+      return req.headers()["authentication"]; // Get the token from headers or cookies and manipulate if needed
+    }
+
+    async do_something_with_pin(pin) 
+    {
+      console.log("\n" + pin + "\n"); // Do something with the generated pin (e.g., send an email)
+    }
+
+    // Optional methods (not required to be implemented)
+    // signToken() {} // You need to install the jsonwebtoken library to use this method
+    // verifyToken() {} // You need to install the jsonwebtoken library to use this method
+  }
+
+  const authService = new MyAuthenticationService();
+
+  // Simple login: <login_value, password> => returns a token
+  app.post("/login", async (req, res) => await authService.simpleLogin(req, res));
+
+  // Login workflow case #1: <login_value, password> => returns a temporary token
+  // Login workflow case #2: <pin, tmp token> => returns a token
+  app.post("/double-login", async (req, res) => await authService.doubleLoginWorkflow(req, res));
+
+  // Authenticated route
+  app.get(
+    "/authenticated", 
+    async (req, res, next) => await authService.authenticated(req, res, next), 
+    (req, res) => res.status(200).json(req.getStateObj())
+  );
+
+  app.listen(5000);
+```
+This section demonstrates how to implement user authentication and authorization using Turbo Express. The example includes a custom MyAuthenticationService class that extends TurboExpress.ExpressServices.AuthenticationService. It provides methods for finding the user, comparing passwords, obtaining the token, and performing additional actions with the generated PIN. The class can be further extended and customized based on your authentication requirements. The example also shows how to use the authentication service by defining routes for simple login, double login workflow, and an authenticated route. Turbo Express handles the authentication process and provides convenient methods for validating user credentials and protecting routes. For more information and advanced usage scenarios, refer to the official documentation of Turbo Express at the project's website.
+
+## Custom Middleware
+
+In addition to the built-in middlewares, TurboServer allows you to create your own custom middlewares for your application. Custom middleware functions can be used to add functionality to your application that is specific to your needs.
+
+To create a custom middleware function, simply define a function that takes three parameters: the request object, the response object, and the next function. The next function is a callback that is used to pass control to the next middleware function in the chain.
+
+Here's an example of a custom middleware function that logs the request method and URL to the console:
+
+``` javascript
+  function logger(req, res, next) {
+    console.log(`${req.method()} ${req.url()}`);
+    next();
+  }
+
+  app.use("/*", logger);
+```
+
+In the above example, we define a logger function that logs the request method and URL to the console, and then calls the next function to pass control to the next middleware function in the chain. We then use the app.use method to add the logger function as a middleware function for all routes in our application.
+
+You can define as many custom middleware functions as you need, and they will be executed in the order in which they are added to the middleware stack.
+
+## Custom Middleware after controller
+
+In TurboServer, you can define middleware that will run after the controller method has completed. This can be useful for tasks such as logging, error handling, or any other post-processing that needs to be done after the response has been sent.
+
+To define an end middleware in TurboServer, you can use the useEndMiddleware method. This method takes a path pattern and one or more middleware functions as arguments. The middleware functions will be executed in the order they are passed to the method.
+
+Here is an example of how to define an end middleware in TurboServer:
+
+``` javascript
+  app.useEndMiddleware("/api/*", (req, res, next) => {
+    console.log("End middleware #1");
+    next();
+  }, (req, res, next) => {
+    console.log("End middleware #2");
+    next();
+  });
+```
+
+# Use Turbo Express as a pro
+
+## Extending Request and Response Interfaces
+
+This example demonstrates how to extend the Request and Response interfaces provided by TurboExpress to add custom methods and functionality.
+Use Turbo Express as a pro
+
+> turbo-express-js/samples/authentication.test.js
+
+``` javascript
+  const TurboExpress = require("turbo-express-js");
+  const RequestInterface = require("turbo-express-js/types/RequestInterface");
+  const ResponseInterface = require("turbo-express-js/types/ResponseInterface");
+
+  const app = new TurboExpress(1);
+
+  class MyRequest extends RequestInterface 
+  {
+    mymethod ()
+    {
+      return `Hello ${this.params().get("username")}, I am Kristina !!`;
+    }
+  }
+
+  class MyResponse extends ResponseInterface
+  {
+    my_response_method (req)
+    {
+      this.status(200).json({ message: req.mymethod() })
+    }
+  }
+
+  app.Request = MyRequest;
+  app.Response = MyResponse;
+
+
+  app.get("/:username", controller);
+
+  app.listen(5000);
+
+  /**
+   * @param {MyRequest} req 
+   * @param {MyResponse} res 
+   */
+  async function controller (req, res) {
+    res.my_response_method(req);
+  }
+```
+
+## Locales
+
+Using multiple languages in TurboExpress JS
+
+``` javascript
+  app.setLocales("/locales");
+  // req.current_locale // getting current locale from query parameters <locale> | Enum<string | can be only one of the folders inside /locales> 
+  // req.getText()      // using texts in multiple languages
+```
+
+## Request Validation and Handling As a PRO
+
+Use custom validation error messages (multiple locales for instance)
+> turbo-express-js/samples/validation_override.test.js
+
+``` javascript
+  const TurboExpress = require("turbo-express-js/TurboServer"); // replace this line with := const TurboExpress = require("turbo-express-js")
+  const RequestInterface = require("turbo-express-js/types/RequestInterface");
+  const ResponseInterface = require("turbo-express-js/types/ResponseInterface");
+
+  const app = new TurboExpress(1);
+
+
+  class CustomValidationError extends TurboExpress.ValidationTypes.ValidationError 
+  {
+    /** @override */ 
+    addContainError (value) 
+    {
+      // ORIGINAL ~> this.errors.push(`Property ${this.property} should contain ${value}`);
+      this.errors.push(`Property ${this.property} should contain ${value} | My own validation error message. `);
+    }
+    /** @override */
+    build (req)
+    {
+      return {
+        namespace: this.namespace,
+        property: this.property,
+        value: this.value,
+        errors: this.errors,
+        custom_property: "My own costum property, generated by Kristina AI."
+      }
+    }
+  }
+  class CustomRequest extends RequestInterface { ValidationError = CustomValidationError; } // Add Custom ValidationError Class to the Request
+  app.Request = CustomRequest; // Register your Request Class to the application
+
+  /**
+   * @param {RequestInterface} req 
+   * @param {ResponseInterface} res 
+   */
+  async function create_user(req, res) {
+    res.status(200).json({
+      body: await req.body(),         // Contains all properties sent to the server
+      valid_data: req.validDataObj(), // Contains only properties included in the validation schema
+      files: req.files()              // Returns a list of files 
+      // Files are also mentioned in the body and valid_data as: <key or property>: <attachment::random id>
+    });
+  }
+
+  app.post("/create_user", TurboExpress.Validation({
+    validations: [
+      new TurboExpress.ValidationTypes.ValidationSchema(
+        "email",
+        [
+          { name: TurboExpress.ValidationTypes.ValidationName.ISREQUIRED },
+          { name: TurboExpress.ValidationTypes.ValidationName.MINLENGTH, value: 5 },
+          { name: TurboExpress.ValidationTypes.ValidationName.MAXLENGTH, value: 28 },
+          { name: TurboExpress.ValidationTypes.ValidationName.CONTAIN, value: "kristina" },
+          { name: TurboExpress.ValidationTypes.ValidationName.NOT_CONTAIN, value: " " },
+          { name: TurboExpress.ValidationTypes.ValidationName.ENDSWIDTH, value: ".com" },
+          { name: TurboExpress.ValidationTypes.ValidationName.VALID_EMAIL },
+        ],
+        true,   // Is required?
+        null,   // Default value
+        "body"  // Namespace: <body, query, params, formdata>
+      ),
+      new TurboExpress.ValidationTypes.ValidationSchema(
+        "avatar",
+        [
+          { name: TurboExpress.ValidationTypes.ValidationName.ATTACHMENT_REQUIRED },
+          { name: TurboExpress.ValidationTypes.ValidationName.ATTACHMENT_EXTENSION, value: "jpeg" },
+        ],
+        true,   // Is required?
+        null,   // Default value
+        "body"  // Namespace: <body, query, params, formdata>
+      )
+    ]
+  }), create_user);
+
+  app.listen(5000);
+```
+This section demonstrates how to validate and handle HTTP requests using Turbo Express. The example includes a create_user function that serves as the request handler. If the request passes the validation, the handler function processes the request and sends a response. However, if the request does not pass the validation, Turbo Express automatically returns a 400 response with the validation errors. Additionally, Turbo Express provides a ValidationError class/interface that you can override for handling custom error messages and supporting multiple languages. For more advanced usage and customization options, refer to the official documentation of Turbo Express at the project's website.
+
+## Router
+
+TurboServer offers a built-in Router to handle different HTTP methods and routes. The Router class is similar to the express.Router class, but it has some additional features. Here's a simple example of how to create a router and use it with TurboServer:
+
+``` javascript
+  const TurboServer = require('turboserver');
+
+  const app = new TurboServer(2);
+  const router = new TurboServer.Router();
+
+  router.get("/admin/:username", (req, res) => { res.send(req.params().get("username")) });
+
+  app.use('/api', router);
+
+  app.listen(3000, () => {
+    console.log('Server started on port 3000');
+  });
+
+```
+
+## About the Author
+
+Our lead developer is a top-tier expert web and software engineer with mastery in over 20 programming languages, including Java, PHP, JavaScript, Golang, C, C++, and Python. With years of experience, they have built numerous open-source projects in these languages, including web, mobile, and desktop applications, as well as libraries and frameworks. Their expertise and passion for technology have been the driving force behind the creation of TurboServer, and they continue to work tirelessly to make it the fastest and most efficient web framework available.
+
+#
+
+## Conclusion
+
+TurboServer is a powerful and fast Node.js web framework that makes it easy to build high-performance web applications. With its built-in middlewares and simple API, it's a great choice for any project.
+
+#
+
+First deployment: 14/05/2023
+Last deployment:  26/06/2023
