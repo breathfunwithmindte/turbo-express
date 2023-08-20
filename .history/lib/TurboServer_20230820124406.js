@@ -248,38 +248,23 @@ module.exports = class TurboServer
    * @returns {void}
    */
 
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
+  /** @param {String} path; @param {...TurboExpressCallback[]} callbacks  */
   get(path, ...callbacks){if(!cluster.isMaster) {this.__get_routes.push(new Route(path, RequestMethods.GET, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   post(path, ...callbacks){if(!cluster.isMaster) {this.__post_routes.push(new Route(path, RequestMethods.POST, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   put(path, ...callbacks){if(!cluster.isMaster) {this.__put_routes.push(new Route(path, RequestMethods.PUT, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   delete(path, ...callbacks){if(!cluster.isMaster) {this.__delete_routes.push(new Route(path, RequestMethods.DELETE, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   head(path, ...callbacks){if(!cluster.isMaster) {this.__head_routes.push(new Route(path, RequestMethods.HEAD, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   patch(path, ...callbacks){if(!cluster.isMaster) {this.__patch_routes.push(new Route(path, RequestMethods.PATCH, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   options(path, ...callbacks){if(!cluster.isMaster) {this.__options_routes.push(new Route(path, RequestMethods.OPTIONS, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   link(path, ...callbacks){if(!cluster.isMaster) {this.__link_routes.push(new Route(path, RequestMethods.LINK, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   unlink(path, ...callbacks){if(!cluster.isMaster) {this.__unlink_routes.push(new Route(path, RequestMethods.UNLINK, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   view(path, ...callbacks){if(!cluster.isMaster) {this.__view_routes.push(new Route(path, RequestMethods.VIEW, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   lock(path, ...callbacks){if(!cluster.isMaster) {this.__lock_routes.push(new Route(path, RequestMethods.LOCK, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   unlock(path, ...callbacks){if(!cluster.isMaster) {this.__unlock_routes.push(new Route(path, RequestMethods.UNLOCK, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   copy(path, ...callbacks){if(!cluster.isMaster) {this.__copy_routes.push(new Route(path, RequestMethods.COPY, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   purge(path, ...callbacks){if(!cluster.isMaster) {this.__purge_routes.push(new Route(path, RequestMethods.PURGE, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   propfind(path, ...callbacks){if(!cluster.isMaster) {this.__propfind_routes.push(new Route(path, RequestMethods.PROPFIND, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
 
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   all(path, ...callbacks){
     if(!cluster.isMaster) {
       const rMethods = new RequestMethods();
@@ -287,7 +272,6 @@ module.exports = class TurboServer
     }
   }
 
-  /** @param {String} path; @param {TurboExpressCallback[] | Router} callbackOrRouter  */
   use(path, ...callbackOrRouter)
   {
     if(callbackOrRouter[0] instanceof Router === true) {
@@ -297,7 +281,6 @@ module.exports = class TurboServer
     }
   }
 
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   useEndMiddleware (path, ...callbacks)
   {
     this.__middlewares_end.push(new Middleware(path, callbacks));

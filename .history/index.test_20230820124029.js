@@ -6,8 +6,6 @@ const app = new TurboExpress(1);
 
 // 6976355584
 
-// app.get("/", (req, res) => {req.}, (req, res) => {req.});
-
-// app.use("/asd", new TurboExpress.Router)
+app.get("/", (req, res) => {});
 
 app.listen(3001, () => console.log("Server is running on port 3000"));

@@ -287,7 +287,7 @@ module.exports = class TurboServer
     }
   }
 
-  /** @param {String} path; @param {TurboExpressCallback[] | Router} callbackOrRouter  */
+  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   use(path, ...callbackOrRouter)
   {
     if(callbackOrRouter[0] instanceof Router === true) {

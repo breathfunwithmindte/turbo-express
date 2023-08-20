@@ -279,7 +279,6 @@ module.exports = class TurboServer
   /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   propfind(path, ...callbacks){if(!cluster.isMaster) {this.__propfind_routes.push(new Route(path, RequestMethods.PROPFIND, callbacks, this.__middlewares_begin, this.__middlewares_end));}}
 
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   all(path, ...callbacks){
     if(!cluster.isMaster) {
       const rMethods = new RequestMethods();
@@ -287,7 +286,6 @@ module.exports = class TurboServer
     }
   }
 
-  /** @param {String} path; @param {TurboExpressCallback[] | Router} callbackOrRouter  */
   use(path, ...callbackOrRouter)
   {
     if(callbackOrRouter[0] instanceof Router === true) {
@@ -297,7 +295,6 @@ module.exports = class TurboServer
     }
   }
 
-  /** @param {String} path; @param {TurboExpressCallback[]} callbacks  */
   useEndMiddleware (path, ...callbacks)
   {
     this.__middlewares_end.push(new Middleware(path, callbacks));

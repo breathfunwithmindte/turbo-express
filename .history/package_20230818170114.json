@@ -1,6 +1,6 @@
 {
   "name": "turbo-express-js",
-  "version": "1.0.8",
+  "version": "1.0.7",
   "description": "turbo express performance security easy to use web server framework ",
   "main": "index.js",
   "directories": {
