@@ -5,10 +5,22 @@ const ResponseInterface = require("./lib/types/ResponseInterface");
 
 const app = new TurboExpress();
 
+class ResponseOverride extends ResponseInterface {
+    send() {
+        this.headers["Content-Type"] = "text/html";
+        this.headers["perfect-evolution"] = "@turbo-express";
+        this.OutgoingMessage.writeHead(this.statusCode, this.headers);
+        this.OutgoingMessage.end("Works <3");
+    }
+}
+
+app.overrideResponse(ResponseOverride)
+
 // 6976355584
 
 app.get("/", (req, res) => { 
-    res.redirect("/home") 
+    res.send()
+    // res.redirect("/home") 
 });
 
 app.get("/home", (req, res) => { 
