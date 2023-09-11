@@ -1,16 +1,17 @@
 const TurboExpress = require("./lib/TurboServer");
 const RequestInterface = require("./lib/types/RequestInterface");
+const SimpleResponse = require("./lib/types/Response/SimpleResponse");
 const ResponseInterface = require("./lib/types/ResponseInterface");
 
 
 const app = new TurboExpress();
-
+app.overrideResponse(SimpleResponse)
 
 
 // 6976355584
 
 app.get("/", (req, res) => { 
-    res.send()
+    res.redirect("Redirect")
     // res.redirect("/home") 
 });
 
